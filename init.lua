@@ -16,11 +16,12 @@ do
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
+          meta:set_string("command", "y-1,x+2,z-2,x-4,z+4,x+4")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
 				  "list[current_player;main;0,5;8,4;]"..
-		          "textarea[0.3,9.3;7,2;command;Command;]"..
+		          "textarea[0.3,9.3;7,2;command;Command;${command}]"..
 				  "button[7,9.2;1,1;do_commnad;Save]")
 		  meta:set_string("infotext", description)
 		  local inv = meta:get_inventory()
@@ -64,6 +65,13 @@ do
       return setmetatable(u, getmetatable(t))
   end
   
+  function get_nodedef_field(nodename, fieldname)
+      if not minetest.registered_nodes[nodename] then
+          return nil
+      end
+      return minetest.registered_nodes[nodename][fieldname]
+  end
+  
   function digg(initial_pos, node, commands)
       local env = minetest.env
       local meta = env:get_meta(initial_pos)
@@ -72,31 +80,28 @@ do
       local step = 1
       for command in commands do
 	      print("On step="..step.." do command "..command)
-          local axis = command[0]
-          local direction = command[1]
+          local axis = string.sub(command, 1, 1)
+          local direction = string.sub(command, 2, 2)
           local count_str = string.sub(command, 3)
           local count = math.abs(tonumber(count_str))
-          print("count="..count)
           local increment
-          if direction == '-' then 
+          print("dir="..direction)
+          if direction == "-" then 
             increment = -1 
           else 
             increment = 1 
           end
           while count > 0 do
-              if axis == x then
-                  pos.x = pos.x + increment;
-              else
-                  pos.y = pos.y + increment;
-              end
+              pos[axis] = pos[axis] + increment;
               local processed_node = env:get_node_or_nil(pos)
               if not processed_node then
                   print("no node at "..minetest.pos_to_string(pos))
                   break
               end
-              if pos ~= initial_pos then
-                inv:add_item("main", processed_node)
-                env:remove_node(pos)
+              local drawtype = get_nodedef_field(processed_node.name, "drawtype")
+              if drawtype == "normal" and not (pos.x == initial_pos.x and pos.y == initial_pos.y and pos.z == initial_pos.z) then
+                  inv:add_item("main", processed_node)
+                  env:remove_node(pos)
               end
               count = count - 1
           end
