@@ -7,8 +7,11 @@ do
 	  groups = {snappy=1,choppy=2,oddly_breakable_by_hand=2,flammable=3},
 	  on_punch = function(pos, node, puncher) 
 		  local meta = minetest.env:get_meta(pos)
-		  --minetest.node_dig(pos.y + 1, , nil)
-	      
+		  local command = meta:get_string("command")
+		  if not command or command == "" then
+			  return
+		  end
+		  print("Start command: "..command)
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
@@ -17,7 +20,7 @@ do
 				  "list[current_name;main;0,0;8,4;]"..
 				  "list[current_player;main;0,5;8,4;]"..
 		          "textarea[0.3,9.3;7,2;command;Command;]"..
-				  "button[7,9.2;1,1;do_commnad;Go]")
+				  "button[7,9.2;1,1;do_commnad;Save]")
 		  meta:set_string("infotext", description)
 		  local inv = meta:get_inventory()
 		  inv:set_size("main", 8*4)
@@ -38,6 +41,10 @@ do
 	  on_metadata_inventory_take = function(pos, listname, index, stack, player)
 		  minetest.log("action", player:get_player_name()..
 				  " takes stuff from chest at "..minetest.pos_to_string(pos))
+	  end,
+      on_receive_fields = function(pos, formname, fields, sender)
+		local meta = minetest.env:get_meta(pos)
+		meta:set_string("command", fields.command)
 	  end,
   })
 
