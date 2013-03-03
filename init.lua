@@ -12,6 +12,7 @@ do
 			  return
 		  end
 		  print("Start command: "..command)
+		  digg(pos, node, string.gmatch(command, "([^,]+)"))
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
@@ -25,11 +26,11 @@ do
 		  local inv = meta:get_inventory()
 		  inv:set_size("main", 8*4)
 	  end,
-	  can_dig = function(pos,player)
+	  --[[can_dig = function(pos,player)
 		  local meta = minetest.env:get_meta(pos);
 		  local inv = meta:get_inventory()
 		  return inv:is_empty("main")
-	  end,
+	  end,]]--
 	  on_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
 		  minetest.log("action", player:get_player_name()..
 				  " moves stuff in chest at "..minetest.pos_to_string(pos))
@@ -56,4 +57,50 @@ do
 	  {'', '', ''},
 	}
   })
+  
+  function table.copy(t)
+      local u = { }
+      for k, v in pairs(t) do u[k] = v end
+      return setmetatable(u, getmetatable(t))
+  end
+  
+  function digg(initial_pos, node, commands)
+      local env = minetest.env
+      local meta = env:get_meta(initial_pos)
+	  local inv = meta:get_inventory()
+	  local pos = table.copy(initial_pos)
+      local step = 1
+      for command in commands do
+	      print("On step="..step.." do command "..command)
+          local axis = command[0]
+          local direction = command[1]
+          local count_str = string.sub(command, 3)
+          local count = math.abs(tonumber(count_str))
+          print("count="..count)
+          local increment
+          if direction == '-' then 
+            increment = -1 
+          else 
+            increment = 1 
+          end
+          while count > 0 do
+              if axis == x then
+                  pos.x = pos.x + increment;
+              else
+                  pos.y = pos.y + increment;
+              end
+              local processed_node = env:get_node_or_nil(pos)
+              if not processed_node then
+                  print("no node at "..minetest.pos_to_string(pos))
+                  break
+              end
+              if pos ~= initial_pos then
+                inv:add_item("main", processed_node)
+                env:remove_node(pos)
+              end
+              count = count - 1
+          end
+		  step = step + 1
+      end
+  end
 end
