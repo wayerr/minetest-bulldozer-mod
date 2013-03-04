@@ -30,7 +30,7 @@ do
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "move(-1,0,0) rect(10)")
+          meta:set_string("command", "wr_utils.print_table(_G)")--"r.move(-1,0,0) r.rect(10)")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
@@ -85,8 +85,16 @@ do
       local meta = env:get_meta(initial_pos)
 	  local inv = meta:get_inventory()
 	  local pos = wr_utils.copy_table(initial_pos)
-      local command_func = loadstring(command)
-      command_func()
+      do
+        local r = wr_router.Router.new(pos);
+        local command_func = loadstring(command)
+        local context = {
+          r = r 
+        }
+        setmetatable(context, {__index = _G})
+        setfenv(command_func, context)
+        command_func()
+      end 
       --[[
       local step = 1
       for command in commands do
