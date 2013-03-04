@@ -1,6 +1,20 @@
 do
+  local mod_name = "buldozzer"
+  local mod_path = minetest.get_modpath(mod_name);
+  
+  function load_module(name) 
+    if _G.name then
+      return
+    end
+    local module = dofile(mod_path.."/"..name..".lua")
+    rawset(_G, name, module)
+  end
+
+  load_module("wr_utils")
+  load_module("wr_router")
+  
   local description = "Automation bot Buldozzer"
-  local name = "buldozzer:buldozzer"
+  local name = mod_name..":buldozzer"
   minetest.register_node(name, {
 	  tiles = {"buldozzer.png"},
 	  description = description,
@@ -12,11 +26,11 @@ do
 			  return
 		  end
 		  print("Start command: "..command)
-		  digg(pos, node, string.gmatch(command, "([^,]+)"))
+		  digg(pos, node, command)
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "y-1,x+2,z-2,x-4,z+4,x+4")
+          meta:set_string("command", "move(-1,0,0) rect(10)")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
@@ -59,12 +73,6 @@ do
 	}
   })
   
-  function table.copy(t)
-      local u = { }
-      for k, v in pairs(t) do u[k] = v end
-      return setmetatable(u, getmetatable(t))
-  end
-  
   function get_nodedef_field(nodename, fieldname)
       if not minetest.registered_nodes[nodename] then
           return nil
@@ -72,11 +80,14 @@ do
       return minetest.registered_nodes[nodename][fieldname]
   end
   
-  function digg(initial_pos, node, commands)
+  function digg(initial_pos, node, command)
       local env = minetest.env
       local meta = env:get_meta(initial_pos)
 	  local inv = meta:get_inventory()
-	  local pos = table.copy(initial_pos)
+	  local pos = wr_utils.copy_table(initial_pos)
+      local command_func = loadstring(command)
+      command_func()
+      --[[
       local step = 1
       for command in commands do
 	      print("On step="..step.." do command "..command)
@@ -106,6 +117,6 @@ do
               count = count - 1
           end
 		  step = step + 1
-      end
+      end]]--
   end
 end
