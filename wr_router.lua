@@ -44,28 +44,35 @@ function this.Router:jump(x, y, z)
   p.z = p.z + z
 end
 
-function this.Router:move(pos)
-  print("move")
+function this.Router:cube(r)
+  self:cuboid(r, r, r)
 end
 
-function this.Router:rect(r)
+function this.Router:cuboid(x,y,z)
   local p = wr_utils.copy_table(self.pos)
-  local halfr = math.floor(r/2) 
-  for i = -halfr, halfr do
-    for j = -halfr, halfr do
-      p.x = self.pos.x + i
-      p.z = self.pos.z + j
-      self:processNode(p)
+  local halfx = math.floor(x/2)
+  local halfy = math.floor(y/2) 
+  local halfz = math.floor(z/2) 
+  for i = -halfx, halfx do
+    for j = -halfz, halfz do
+      for k = -halfy, halfy do
+        p.x = self.pos.x + i
+        p.z = self.pos.z + j
+        p.y = self.pos.y + k
+        self:processNode(p)
+      end
     end
   end
 end
 
-function this.Router:cube(r)
+function this.Router:disc(rx, ry, rz)
   local p = wr_utils.copy_table(self.pos)
-  local halfr = math.floor(r/2) 
-  for i = -halfr, halfr do
-    for j = -halfr, halfr do
-      for k = -halfr, halfr do
+  local halfx = math.floor(x/2)
+  local halfy = math.floor(y/2) 
+  local halfz = math.floor(z/2) 
+  for i = -halfx, halfx do
+    for j = -halfz, halfz do
+      for k = -halfy, halfy do
         p.x = self.pos.x + i
         p.z = self.pos.z + j
         p.y = self.pos.y + k

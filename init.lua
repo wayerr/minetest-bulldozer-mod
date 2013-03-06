@@ -16,9 +16,9 @@ do
   local description = "Automation bot Buldozzer"
   local name = mod_name..":buldozzer"
   minetest.register_node(name, {
-	  tiles = {"buldozzer.png"},
+	  tiles = {"buldozzer_py.png","buldozzer_my.png","buldozzer_px.png","buldozzer_mx.png","buldozzer_pz.png","buldozzer_mz.png"},
 	  description = description,
-	  groups = {snappy=1,choppy=2,oddly_breakable_by_hand=2,flammable=3},
+	  groups = {snappy=1,choppy=2,oddly_breakable_by_hand=2},
 	  on_punch = function(pos, node, puncher) 
 		  local meta = minetest.env:get_meta(pos)
 		  local command = meta:get_string("command")
@@ -30,7 +30,7 @@ do
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "r:jump(0, -1, 0) r:rect(30) r:cube(10)")
+          meta:set_string("command", "r:jump(1, 0, 0) r:cube(2)")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
