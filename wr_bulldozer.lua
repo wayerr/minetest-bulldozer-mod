@@ -2,6 +2,17 @@ load_module("wr_utils")
 
 local this = {}
 
+--make axes map
+local axes_table = {'x','y','z'}
+do
+  local copy_axes = wr_utils.copy_table(axes_table);
+  for k,v in ipairs(copy_axes) do
+    --make x={y,z} tables
+    axes_table[v] = wr_utils.copy_table(axes_table);
+    table.remove(axes_table[v], k)
+  end
+end
+
 function this.pos(x, y, z) 
   return {x=x, y=y, z=z}
 end
@@ -75,7 +86,7 @@ function this.Router:circle(rx)
     local fx = math.floor(x)
     local fy = math.floor(y)
     p.y = self.pos.y
-    
+    -- need refactoring!
     p.x = self.pos.x + fx
     p.z = self.pos.z + fy
     self:processNode(p)
@@ -103,7 +114,11 @@ function this.Router:circle(rx)
   end
 end
 
-function this.Router:sphere(rx, ry, rz)
+function this.Router:sphere(r)
+  self:spheroid(r, r, r)
+end
+
+function this.Router:spheroid(rx, ry, rz)
   local p = wr_utils.copy_table(self.pos)
   local rx2 = rx*rx
   local ry2 = ry*ry
@@ -122,6 +137,29 @@ function this.Router:sphere(rx, ry, rz)
         end
       end
     end  
+  end
+end
+
+function this.Router:cylinder(axis, r, h)
+  local p = wr_utils.copy_table(self.pos)
+  local r2 = r*r
+  local axes = axes_table[axis]
+  local hstart = math.min(0, h)
+  local hend = math.max(0, h)
+  for x = -r, r do
+    local x2 = x*x
+    for y = -r, r do
+      local y2 = y*y
+      if x2 + y2 <= r2 then
+        --may be 'for' statement?
+        p[axes[1]] = self.pos[axes[1]] + x
+        p[axes[2]] = self.pos[axes[2]] + y
+        for hi = hstart, hend do
+          p[axis] = self.pos[axis] + hi
+          self:processNode(p)
+        end
+      end
+    end
   end
 end
 

@@ -1,5 +1,5 @@
 do
-  local mod_name = "buldozzer"
+  local mod_name = "bulldozer"
   local mod_path = minetest.get_modpath(mod_name);
   
   function load_module(name) 
@@ -13,10 +13,10 @@ do
   load_module("wr_utils")
   load_module("wr_router")
   
-  local description = "Automation bot Buldozzer"
-  local name = mod_name..":buldozzer"
+  local description = "Automation bot Bulldozer"
+  local name = mod_name..":bulldozer"
   minetest.register_node(name, {
-	  tiles = {"buldozzer_py.png","buldozzer_my.png","buldozzer_px.png","buldozzer_mx.png","buldozzer_pz.png","buldozzer_mz.png"},
+	  tiles = {"bulldozer_py.png","bulldozer_my.png","bulldozer_px.png","bulldozer_mx.png","bulldozer_pz.png","bulldozer_mz.png"},
 	  description = description,
 	  groups = {snappy=1,choppy=2,oddly_breakable_by_hand=2},
 	  on_punch = function(pos, node, puncher) 
@@ -30,7 +30,7 @@ do
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "r:jump(0, -1, 0) r:sphere(5, 5, 5)")
+          meta:set_string("command", "r:jump(0, -1, 0) r:sphere(5)")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
