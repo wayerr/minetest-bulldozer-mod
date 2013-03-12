@@ -65,7 +65,7 @@ function this.Router:cuboid(x,y,z)
   end
 end
 
-function this.Router:disc(rx, ry, rz)
+function this.Router:circle(rx)
   local p = wr_utils.copy_table(self.pos)
   local rx2 = rx*rx;
   local endx = math.floor(rx/math.sqrt(2))
@@ -75,6 +75,7 @@ function this.Router:disc(rx, ry, rz)
     local fx = math.floor(x)
     local fy = math.floor(y)
     p.y = self.pos.y
+    
     p.x = self.pos.x + fx
     p.z = self.pos.z + fy
     self:processNode(p)
@@ -99,6 +100,28 @@ function this.Router:disc(rx, ry, rz)
     p.x = self.pos.x - fy
     p.z = self.pos.z - fx
     self:processNode(p)
+  end
+end
+
+function this.Router:sphere(rx, ry, rz)
+  local p = wr_utils.copy_table(self.pos)
+  local rx2 = rx*rx
+  local ry2 = ry*ry
+  local rz2 = rz*rz
+  for x = -rx, rx do
+    local x2 = x*x
+    for y = -ry, ry do
+      local y2 = y*y
+      for z = -rz, rz do
+        local z2 = z*z
+        if x2/rx2 + y2/ry2 + z2/rz2 <= 1 then
+          p.x = self.pos.x + x
+          p.y = self.pos.y + y
+          p.z = self.pos.z + z
+          self:processNode(p)
+        end
+      end
+    end  
   end
 end
 
