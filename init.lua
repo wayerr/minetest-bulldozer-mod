@@ -11,7 +11,7 @@ do
   end
 
   load_module("wr_utils")
-  load_module("wr_router")
+  load_module("wr_bulldozer")
   
   local description = "Automation bot Bulldozer"
   local name = mod_name..":bulldozer"
