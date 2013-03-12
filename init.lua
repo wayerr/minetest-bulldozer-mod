@@ -30,7 +30,7 @@ do
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "r:jump(1, 0, 0) r:cube(2)")
+          meta:set_string("command", "r:jump(0, -1, 0) r:disc(5,5,5)")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..

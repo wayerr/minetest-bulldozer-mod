@@ -67,18 +67,38 @@ end
 
 function this.Router:disc(rx, ry, rz)
   local p = wr_utils.copy_table(self.pos)
-  local halfx = math.floor(x/2)
-  local halfy = math.floor(y/2) 
-  local halfz = math.floor(z/2) 
-  for i = -halfx, halfx do
-    for j = -halfz, halfz do
-      for k = -halfy, halfy do
-        p.x = self.pos.x + i
-        p.z = self.pos.z + j
-        p.y = self.pos.y + k
-        self:processNode(p)
-      end
-    end
+  local rx2 = rx*rx;
+  local endx = math.floor(rx/math.sqrt(2))
+  for x = 0, endx do
+    local x2 = x*x
+    local y = math.sqrt(rx2 - x2)
+    local fx = math.floor(x)
+    local fy = math.floor(y)
+    p.y = self.pos.y
+    p.x = self.pos.x + fx
+    p.z = self.pos.z + fy
+    self:processNode(p)
+    p.x = self.pos.x - fx
+    p.z = self.pos.z + fy
+    self:processNode(p)
+    p.x = self.pos.x + fx
+    p.z = self.pos.z - fy
+    self:processNode(p)
+    p.x = self.pos.x - fx
+    p.z = self.pos.z - fy
+    self:processNode(p)
+    p.x = self.pos.x + fy
+    p.z = self.pos.z + fx
+    self:processNode(p)
+    p.x = self.pos.x - fy
+    p.z = self.pos.z + fx
+    self:processNode(p)
+    p.x = self.pos.x + fy
+    p.z = self.pos.z - fx
+    self:processNode(p)
+    p.x = self.pos.x - fy
+    p.z = self.pos.z - fx
+    self:processNode(p)
   end
 end
 
