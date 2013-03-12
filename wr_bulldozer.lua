@@ -17,10 +17,10 @@ function this.pos(x, y, z)
   return {x=x, y=y, z=z}
 end
 
-this.Router = {}
-local Router_mt = {__index = this.Router}
+this.Bulldozer = {}
+local Bulldozer_mt = {__index = this.Bulldozer}
 
-function this.Router.new(pos) 
+function this.Bulldozer.new(pos) 
   local env = minetest.env
   local meta = env:get_meta(pos)
   t = {
@@ -31,10 +31,10 @@ function this.Router.new(pos)
     inv = meta:get_inventory()
   }
   print("new router with pos="..minetest.pos_to_string(t.pos))
-  return setmetatable(t, Router_mt)
+  return setmetatable(t, Bulldozer_mt)
 end
 
-function this.Router:processNode(pos) 
+function this.Bulldozer:processNode(pos) 
   local processed_node = self.env:get_node_or_nil(pos)
   if not processed_node then
       print("no node at "..minetest.pos_to_string(pos))
@@ -47,7 +47,7 @@ function this.Router:processNode(pos)
   end
 end
 
-function this.Router:jump(x, y, z)
+function this.Bulldozer:jump(x, y, z)
   local p = self.pos
   print("jump to "..minetest.pos_to_string(p))
   p.x = p.x + x
@@ -55,11 +55,11 @@ function this.Router:jump(x, y, z)
   p.z = p.z + z
 end
 
-function this.Router:cube(r)
+function this.Bulldozer:cube(r)
   self:cuboid(r, r, r)
 end
 
-function this.Router:cuboid(x,y,z)
+function this.Bulldozer:cuboid(x,y,z)
   local p = wr_utils.copy_table(self.pos)
   local halfx = math.floor(x/2)
   local halfy = math.floor(y/2) 
@@ -76,7 +76,7 @@ function this.Router:cuboid(x,y,z)
   end
 end
 
-function this.Router:circle(rx)
+function this.Bulldozer:circle(rx)
   local p = wr_utils.copy_table(self.pos)
   local rx2 = rx*rx;
   local endx = math.floor(rx/math.sqrt(2))
@@ -114,11 +114,11 @@ function this.Router:circle(rx)
   end
 end
 
-function this.Router:sphere(r)
+function this.Bulldozer:sphere(r)
   self:spheroid(r, r, r)
 end
 
-function this.Router:spheroid(rx, ry, rz)
+function this.Bulldozer:spheroid(rx, ry, rz)
   local p = wr_utils.copy_table(self.pos)
   local rx2 = rx*rx
   local ry2 = ry*ry
@@ -140,7 +140,7 @@ function this.Router:spheroid(rx, ry, rz)
   end
 end
 
-function this.Router:cylinder(axis, r, h)
+function this.Bulldozer:cylinder(axis, r, h)
   local p = wr_utils.copy_table(self.pos)
   local r2 = r*r
   local axes = axes_table[axis]

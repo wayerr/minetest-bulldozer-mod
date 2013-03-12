@@ -79,7 +79,7 @@ do
 	  local inv = meta:get_inventory()
 	  local pos = wr_utils.copy_table(initial_pos)
       do
-        local r = wr_router.Router.new(pos);
+        local r = wr_bulldozer.Bulldozer.new(pos);
         local command_func = loadstring(command)
         local context = {
           r = r 
