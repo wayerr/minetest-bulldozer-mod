@@ -27,12 +27,11 @@ do
 			  return
 		  end
 		  print("Start command: "..command)
-          minetest.env:add_entity(pos, bulldozer_entity_name)
-		  --digg(pos, node, command)
+          digg(pos, node, command)
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "r:jump(0, -1, 0) r:sphere(5)")
+          meta:set_string("command", "b:jump(0, -1, 0) b:sphere(5)")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
@@ -61,7 +60,7 @@ do
   minetest.register_entity(bulldozer_entity_name, {
     initial_properties = {
       hp_max = 1,
-      physical = true,
+      --physical = true,
       collisionbox = {-0.17,-0.17,-0.17, 0.17,0.17,0.17},
       visual = "wielditem",
       visual_size = {x=0.20, y=0.20},
@@ -69,11 +68,12 @@ do
       is_visible = true,
     },
 
-    itemstring = '',
-    physical_state = true,
-
+    itemstring = '',--TODO remove
+    last_step_time = 0,
+    step_timeout = .1,
+    
     get_staticdata = function(self)
-      --return self.itemstring
+      --TODO persist unprocessed nodes queue
       return minetest.serialize({
         itemstring = self.itemstring,
         always_collect = self.always_collect,
@@ -91,14 +91,27 @@ do
         self.itemstring = staticdata
       end
       self.object:set_armor_groups({immortal=1})
-      self.object:setvelocity({x=0, y=2, z=0})
-      self.object:setacceleration({x=0, y=-10, z=0})
-      
+      local p = self.object:getpos() --TODO get pos from parent node or persisted value
+      self.bulldozer = wr_bulldozer.Bulldozer:new(p)
     end,
 
-    on_step = function(self, dtime)
-      local p = self.object:getpos()
-      
+    on_step = function(self, time)
+      local velocity = self.object:getvelocity()
+      self.last_step_time = self.last_step_time + time
+      if velocity.x ~= 0 or velocity.y ~= 0 or velocity.z ~= 0 or
+          (self.last_step_time < self.step_timeout) 
+        then
+        return
+      end
+      local prev_pos = wr_utils.copy_table(self.bulldozer.pos)
+      self.bulldozer:on_step()
+      if self.bulldozer:is_empty() then
+        self.object:remove()
+      end
+      self.object:moveto(prev_pos)
+      --print("move_to="..minetest.pos_to_string(prev_pos))
+      --self.object:setpos(prev_pos)
+      self.last_step_time = 0
     end,
 
     on_punch = function(self, hitter)
@@ -119,10 +132,10 @@ do
 	  local inv = meta:get_inventory()
 	  local pos = wr_utils.copy_table(initial_pos)
       do
-        local r = wr_bulldozer.Bulldozer.new(pos);
+        local entity = minetest.env:add_entity(pos, bulldozer_entity_name)
         local command_func = loadstring(command)
         local context = {
-          r = r 
+          b = entity:get_luaentity().bulldozer
         }
         setmetatable(context, {__index = _G})
         setfenv(command_func, context)

@@ -55,7 +55,7 @@ function this.Router:cuboid(x,y,z)
         p.x = self.pos.x + i
         p.z = self.pos.z + j
         p.y = self.pos.y + k
-        self:processNode(p)
+        self:process_node(p)
       end
     end
   end
@@ -74,28 +74,28 @@ function this.Router:circle(rx)
     -- need refactoring!
     p.x = self.pos.x + fx
     p.z = self.pos.z + fy
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x - fx
     p.z = self.pos.z + fy
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x + fx
     p.z = self.pos.z - fy
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x - fx
     p.z = self.pos.z - fy
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x + fy
     p.z = self.pos.z + fx
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x - fy
     p.z = self.pos.z + fx
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x + fy
     p.z = self.pos.z - fx
-    self:processNode(p)
+    self:process_node(p)
     p.x = self.pos.x - fy
     p.z = self.pos.z - fx
-    self:processNode(p)
+    self:process_node(p)
   end
 end
 
@@ -118,7 +118,7 @@ function this.Router:spheroid(rx, ry, rz)
           p.x = self.pos.x + x
           p.y = self.pos.y + y
           p.z = self.pos.z + z
-          self:processNode(p)
+          self:process_node(p)
         end
       end
     end  
@@ -141,7 +141,7 @@ function this.Router:cylinder(axis, r, h)
         p[axes[2]] = self.pos[axes[2]] + y
         for hi = hstart, hend do
           p[axis] = self.pos[axis] + hi
-          self:processNode(p)
+          self:process_node(p)
         end
       end
     end
