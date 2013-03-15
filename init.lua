@@ -109,8 +109,6 @@ do
         self.object:remove()
       end
       self.object:moveto(prev_pos)
-      --print("move_to="..minetest.pos_to_string(prev_pos))
-      --self.object:setpos(prev_pos)
       self.last_step_time = 0
     end,
 

@@ -38,7 +38,7 @@ function this.Bulldozer:on_step()
   self.pos = wr_utils.copy_table(pos)
   local processed_node = self.env:get_node_or_nil(pos)
   if not processed_node then
-      print("no node at "..minetest.pos_to_string(pos))
+      --print("no node at "..minetest.pos_to_string(pos))
       return
   end
   local drawtype = wr_utils.get_nodedef_field(processed_node.name, "drawtype")
