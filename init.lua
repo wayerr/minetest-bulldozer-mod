@@ -14,8 +14,9 @@ do
   load_module("wr_bulldozer")
   
   local description = "Automation bot Bulldozer"
-  local name = mod_name..":bulldozer"
-  minetest.register_node(name, {
+  local bulldozer_node_name = mod_name..":bulldozer"
+  local bulldozer_entity_name = mod_name..":bulldozer_entity"
+  minetest.register_node(bulldozer_node_name, {
 	  tiles = {"bulldozer_py.png","bulldozer_my.png","bulldozer_px.png","bulldozer_mx.png","bulldozer_pz.png","bulldozer_mz.png"},
 	  description = description,
 	  groups = {snappy=1,choppy=2,oddly_breakable_by_hand=2},
@@ -26,7 +27,8 @@ do
 			  return
 		  end
 		  print("Start command: "..command)
-		  digg(pos, node, command)
+          minetest.env:add_entity(pos, bulldozer_entity_name)
+		  --digg(pos, node, command)
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
@@ -41,23 +43,6 @@ do
 		  local inv = meta:get_inventory()
 		  inv:set_size("main", 8*4)
 	  end,
-	  --[[can_dig = function(pos,player)
-		  local meta = minetest.env:get_meta(pos);
-		  local inv = meta:get_inventory()
-		  return inv:is_empty("main")
-	  end,]]--
-	  on_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
-		  minetest.log("action", player:get_player_name()..
-				  " moves stuff in chest at "..minetest.pos_to_string(pos))
-	  end,
-	  on_metadata_inventory_put = function(pos, listname, index, stack, player)
-		  minetest.log("action", player:get_player_name()..
-				  " moves stuff to chest at "..minetest.pos_to_string(pos))
-	  end,
-	  on_metadata_inventory_take = function(pos, listname, index, stack, player)
-		  minetest.log("action", player:get_player_name()..
-				  " takes stuff from chest at "..minetest.pos_to_string(pos))
-	  end,
       on_receive_fields = function(pos, formname, fields, sender)
 		local meta = minetest.env:get_meta(pos)
 		meta:set_string("command", fields.command)
@@ -65,12 +50,67 @@ do
   })
 
   minetest.register_craft({
-	output = '"'..name..'" 2',
+	output = '"'..bulldozer_node_name..'" 2',
 	recipe = {
 	  {'default:wood', 'default:wood', ''},
 	  {'default:wood', 'default:wood', ''},
 	  {'', '', ''},
 	}
+  })
+  
+  minetest.register_entity(bulldozer_entity_name, {
+    initial_properties = {
+      hp_max = 1,
+      physical = true,
+      collisionbox = {-0.17,-0.17,-0.17, 0.17,0.17,0.17},
+      visual = "wielditem",
+      visual_size = {x=0.20, y=0.20},
+      textures = {bulldozer_node_name},
+      is_visible = true,
+    },
+
+    itemstring = '',
+    physical_state = true,
+
+    get_staticdata = function(self)
+      --return self.itemstring
+      return minetest.serialize({
+        itemstring = self.itemstring,
+        always_collect = self.always_collect,
+      })
+    end,
+
+    on_activate = function(self, staticdata)
+      if string.sub(staticdata, 1, string.len("return")) == "return" then
+        local data = minetest.deserialize(staticdata)
+        if data and type(data) == "table" then
+          self.itemstring = data.itemstring
+          self.always_collect = data.always_collect
+        end
+      else
+        self.itemstring = staticdata
+      end
+      self.object:set_armor_groups({immortal=1})
+      self.object:setvelocity({x=0, y=2, z=0})
+      self.object:setacceleration({x=0, y=-10, z=0})
+      
+    end,
+
+    on_step = function(self, dtime)
+      local p = self.object:getpos()
+      
+    end,
+
+    on_punch = function(self, hitter)
+      if self.itemstring ~= '' then
+        local left = hitter:get_inventory():add_item("main", self.itemstring)
+        if not left:is_empty() then
+          self.itemstring = left:to_string()
+          return
+        end
+      end
+      self.object:remove()
+    end,
   })
   
   function digg(initial_pos, node, command)
