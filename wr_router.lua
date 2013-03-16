@@ -3,7 +3,7 @@ load_module("wr_utils")
 local this = {}
 
 --make axes map
-local axes_table = {'x','y','z'}
+local axes_table = {'x','z','y'}
 do
   local copy_axes = wr_utils.copy_table(axes_table);
   for k,v in ipairs(copy_axes) do
@@ -31,10 +31,13 @@ function this.Router:init(pos)
   self.pos = wr_utils.copy_table(pos)
 end
 
+function this.Router:_move(cursor_pos, axes, i, j)
+  cursor_pos[axes[1]] = self.pos[axes[1]] + i
+  cursor_pos[axes[2]] = self.pos[axes[2]] + j
+end
 
 function this.Router:jump(x, y, z)
   local p = self.pos
-  print("jump to "..minetest.pos_to_string(p))
   p.x = p.x + x
   p.y = p.y + y
   p.z = p.z + z
@@ -49,52 +52,71 @@ function this.Router:cuboid(x,y,z)
   local halfx = math.floor(x/2)
   local halfy = math.floor(y/2) 
   local halfz = math.floor(z/2) 
-  for i = -halfx, halfx do
-    for j = -halfz, halfz do
-      for k = -halfy, halfy do
-        p.x = self.pos.x + i
+  for k = 0, y do
+    p.y = self.pos.y + k
+    for i = 0, x do
+      p.x = self.pos.x + i
+      for j = 0, z do
         p.z = self.pos.z + j
-        p.y = self.pos.y + k
         self:process_node(p)
       end
     end
   end
 end
 
-function this.Router:circle(rx)
+function this.Router:circle(axis, r)
   local p = wr_utils.copy_table(self.pos)
-  local rx2 = rx*rx;
-  local endx = math.floor(rx/math.sqrt(2))
-  for x = 0, endx do
-    local x2 = x*x
-    local y = math.sqrt(rx2 - x2)
-    local fx = math.floor(x)
-    local fy = math.floor(y)
-    p.y = self.pos.y
-    -- need refactoring!
-    p.x = self.pos.x + fx
-    p.z = self.pos.z + fy
+  local r2 = r*r;
+  local e = math.floor(r/math.sqrt(2))
+  local axes = axes_table[axis]
+  p[axis] = self.pos[axis]
+  for i = 0, e do
+    local i2 = i*i
+    local j = math.sqrt(r2 - i2)
+    local fi = math.floor(i)
+    local fj = math.floor(j)
+    
+    self:_move(p, axes,  fi,  fj)
     self:process_node(p)
-    p.x = self.pos.x - fx
-    p.z = self.pos.z + fy
+    self:_move(p, axes, -fi,  fj)
     self:process_node(p)
-    p.x = self.pos.x + fx
-    p.z = self.pos.z - fy
+    self:_move(p, axes,  fi, -fj)
     self:process_node(p)
-    p.x = self.pos.x - fx
-    p.z = self.pos.z - fy
+    self:_move(p, axes, -fi, -fj)
     self:process_node(p)
-    p.x = self.pos.x + fy
-    p.z = self.pos.z + fx
+    self:_move(p, axes,  fj,  fi)
     self:process_node(p)
-    p.x = self.pos.x - fy
-    p.z = self.pos.z + fx
+    self:_move(p, axes, -fj,  fi)
     self:process_node(p)
-    p.x = self.pos.x + fy
-    p.z = self.pos.z - fx
+    self:_move(p, axes,  fj, -fi)
     self:process_node(p)
-    p.x = self.pos.x - fy
-    p.z = self.pos.z - fx
+    self:_move(p, axes, -fj, -fi)
+    self:process_node(p)
+  end
+end
+
+function this.Router:square(axis, len)
+  self:rect(axis, len, len)
+end
+
+function this.Router:rect(axis, width, height)
+  local p = wr_utils.copy_table(self.pos)
+  local axes = axes_table[axis]
+  p[axis] = self.pos[axis]
+  local full_len = (width + height) * 2 - 1
+  local i = 0
+  local j = 0
+  for counter = 0, full_len do
+    if counter < width then
+      i = i + 1
+    elseif counter < width + height then
+      j = j + 1
+    elseif counter < width*2 + height then
+      i = i - 1
+    else
+      j = j - 1
+    end
+    self:_move(p, axes, i, j)
     self:process_node(p)
   end
 end
@@ -136,9 +158,7 @@ function this.Router:cylinder(axis, r, h)
     for y = -r, r do
       local y2 = y*y
       if x2 + y2 <= r2 then
-        --may be 'for' statement?
-        p[axes[1]] = self.pos[axes[1]] + x
-        p[axes[2]] = self.pos[axes[2]] + y
+        self:_move(p, axes,  x,  y)
         for hi = hstart, hend do
           p[axis] = self.pos[axis] + hi
           self:process_node(p)

@@ -25,8 +25,25 @@ function this.Bulldozer:is_empty()
   return #self.queue == 0
 end
 
-function this.Bulldozer:build(flag) 
-  self.build_node_name = 'default:stone'
+function this.Bulldozer:go_home()
+  self.pos = wr_utils.copy_table(self.initial_pos)
+end
+
+function this.Bulldozer:build()
+  self:set_build_mode(true)
+end
+
+function this.Bulldozer:erase()
+  self:set_build_mode(false)
+end
+
+function this.Bulldozer:set_build_mode(flag)
+  if flag then
+    self.build_node_name = 'default:stone'
+  else
+    self.build_node_name = nil
+  end
+  print("set_build_mode "..tostring(self.build_node_name))
 end
 
 function this.Bulldozer:is_build_mode() 
@@ -35,7 +52,10 @@ end
 
 function this.Bulldozer:process_node(pos) 
   --print("process_node(pos="..minetest.pos_to_string(pos))
-  table.insert(self.queue, wr_utils.copy_table(pos))
+  table.insert(self.queue, {
+    pos = wr_utils.copy_table(pos),
+    build_mode = self:is_build_mode() 
+  })
 end
 
 function this.Bulldozer:_get_new_node(context) 
@@ -61,20 +81,23 @@ function this.Bulldozer:_put_node(pos, node)
     self:_grab_node(pos, node)
   end
   self.env:set_node(pos, self:_get_new_node({pos = pos, old_node = node}))
+  return pos
 end
 
 function this.Bulldozer:on_step()
-  local pos = table.remove(self.queue, 1)
-  if not pos or 
-     (pos.x == self.initial_pos.x and pos.y == self.initial_pos.y and pos.z == self.initial_pos.z)  --skip bulldozer node position
-    then 
+  local task = table.remove(self.queue, 1)
+  if not task then
+    return nil
+  end
+  local pos = task.pos
+  if (pos.x == self.initial_pos.x and pos.y == self.initial_pos.y and pos.z == self.initial_pos.z)  --skip bulldozer node position
+      then 
     return nil
   end
   --print("Bulldozer:on_step(pos="..minetest.pos_to_string(pos))
-  self.pos = wr_utils.copy_table(pos)
   local node = self.env:get_node_or_nil(pos)
   local result = nil;
-  if self:is_build_mode() then
+  if task.build_mode then
     result = self:_put_node(pos, node)
   else
     result = self:_grab_node(pos, node)

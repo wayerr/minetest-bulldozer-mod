@@ -31,7 +31,7 @@ do
 	  end,
 	  on_construct = function(pos)
 		  local meta = minetest.env:get_meta(pos)
-          meta:set_string("command", "b:jump(0, -1, 0) b:sphere(5)")
+          meta:set_string("command", "b:jump(0,2,0) b:build() \nfor i = 0,10 do b:jump(0,0,1) b:rect('z',10,5) end ")
 		  meta:set_string("formspec",
 				  "size[8,11]"..
 				  "list[current_name;main;0,0;8,4;]"..
@@ -103,9 +103,13 @@ do
         then
         return
       end
-      local res = self.bulldozer:on_step()
-      if self.bulldozer:is_empty() then
-        self.object:remove()
+      local res = nil
+      while not res do
+        res = self.bulldozer:on_step()
+        if self.bulldozer:is_empty() then
+          self.object:remove()
+          return
+        end
       end
       if res then
         local copy_pos = wr_utils.copy_table(res)
