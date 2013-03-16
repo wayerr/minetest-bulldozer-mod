@@ -70,7 +70,7 @@ do
 
     itemstring = '',--TODO remove
     last_step_time = 0,
-    step_timeout = .1,
+    step_timeout = .01,
     
     get_staticdata = function(self)
       --TODO persist unprocessed nodes queue
