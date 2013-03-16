@@ -32,21 +32,22 @@ end
 function this.Bulldozer:on_step()
   local pos = table.remove(self.queue, 1)
   if not pos then 
-    return 
+    return nil
   end
   --print("Bulldozer:on_step(pos="..minetest.pos_to_string(pos))
   self.pos = wr_utils.copy_table(pos)
   local processed_node = self.env:get_node_or_nil(pos)
   if not processed_node then
       --print("no node at "..minetest.pos_to_string(pos))
-      return
+      return nil
   end
   local drawtype = wr_utils.get_nodedef_field(processed_node.name, "drawtype")
   if drawtype == "normal" and not (pos.x == self.initial_pos.x and pos.y == self.initial_pos.y and pos.z == self.initial_pos.z) then
-      
       self.inv:add_item("main", processed_node)
       self.env:remove_node(pos)
+      return pos
   end
+  return nil
 end
 
 return this

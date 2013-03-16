@@ -103,13 +103,15 @@ do
         then
         return
       end
-      local prev_pos = wr_utils.copy_table(self.bulldozer.pos)
-      self.bulldozer:on_step()
+      local res = self.bulldozer:on_step()
       if self.bulldozer:is_empty() then
         self.object:remove()
       end
-      self.object:moveto(prev_pos)
-      self.last_step_time = 0
+      if res then
+        local copy_pos = wr_utils.copy_table(res)
+        self.object:moveto(copy_pos)
+        self.last_step_time = 0
+      end
     end,
 
     on_punch = function(self, hitter)
