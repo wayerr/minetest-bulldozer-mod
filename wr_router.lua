@@ -17,6 +17,22 @@ function this.pos(x, y, z)
   return {x=x, y=y, z=z}
 end
 
+function this.round(p) 
+  return {
+    x=math.floor(p.x + .5), 
+    y=math.floor(p.y + .5), 
+    z=math.floor(p.z + .5)
+  }
+end
+
+function this.add(pos, dx, dy, dz) 
+  return {
+    x=pos.x + dx, 
+    y=pos.y + dy, 
+    z=pos.z + dz
+  }
+end
+
 this.Router = {}
 local Router_mt = {__index = this.Router}
 this.Router.mt = Router_mt
@@ -29,6 +45,7 @@ end
 function this.Router:init(pos) 
   self.initial_pos = wr_utils.copy_table(pos)
   self.pos = wr_utils.copy_table(pos)
+  self._path = {}
 end
 
 function this.Router:_move(cursor_pos, axes, i, j)
@@ -43,15 +60,62 @@ function this.Router:jump(x, y, z)
   p.z = p.z + z
 end
 
+function this.Router:path(...)
+  local diff = {}
+  for i,v in ipairs(arg) do
+    local axis = (i-1) % 3
+    if axis == 0 then
+      diff.dx = v
+    elseif axis == 1 then
+      diff.dy = v
+    else
+      diff.dz = v
+      self:line(diff.dx, diff.dy, diff.dz)
+    end
+  end
+end
+
+function this.Router:line(dx, dy, dz)
+  local p = wr_utils.copy_table(self.pos)
+  -- used DDA algorithm
+  local adx = math.abs(dx)
+  local ady = math.abs(dy)
+  local adz = math.abs(dz)
+  local dmax = math.max(adx,math.max(ady, adz))
+  if dmax == 0 then
+    return
+  end
+  local xstep = dx/dmax
+  local ystep = dy/dmax
+  local zstep = dz/dmax
+  print("line dmax="..dmax)
+  for d = 0, dmax do
+    p.x = p.x + xstep
+    p.y = p.y + ystep
+    p.z = p.z + zstep
+    local pos = this.round(p)
+    print("line pos="..minetest.pos_to_string(pos))
+    table.insert(self._path, pos)
+  end
+  self.pos = p;
+end
+
+function this.Router:draw()
+  while true do
+    local p = table.remove(self._path, 1)
+    if not p then
+      break
+    end
+    self:process_node(p)
+  end
+end
+
 function this.Router:cube(r)
   self:cuboid(r, r, r)
 end
 
 function this.Router:cuboid(x,y,z)
   local p = wr_utils.copy_table(self.pos)
-  local halfx = math.floor(x/2)
-  local halfy = math.floor(y/2) 
-  local halfz = math.floor(z/2) 
   for k = 0, y do
     p.y = self.pos.y + k
     for i = 0, x do
