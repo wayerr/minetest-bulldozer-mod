@@ -60,6 +60,21 @@ function this.Router:jump(x, y, z)
   p.z = p.z + z
 end
 
+function this.Router:extend(axis, lenght)
+  local path = self._path
+  if not path or #path == 0 then
+    return
+  end
+  local path_len = #path
+  for i = 1, lenght do
+    for path_idx = 1, path_len do
+      local exentry = wr_utils.copy_table(path[path_idx])
+      exentry[axis] = exentry[axis] + i
+      table.insert(path, exentry)
+    end
+  end
+end
+
 function this.Router:path(...)
   local diff = {}
   for i,v in ipairs(arg) do
@@ -88,13 +103,12 @@ function this.Router:line(dx, dy, dz)
   local xstep = dx/dmax
   local ystep = dy/dmax
   local zstep = dz/dmax
-  print("line dmax="..dmax)
   for d = 0, dmax do
     p.x = p.x + xstep
     p.y = p.y + ystep
     p.z = p.z + zstep
     local pos = this.round(p)
-    print("line pos="..minetest.pos_to_string(pos))
+    --print("line pos="..minetest.pos_to_string(pos))
     table.insert(self._path, pos)
   end
   self.pos = p;

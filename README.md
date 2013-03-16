@@ -3,22 +3,9 @@ minetest-bulldozer-mod
 
 destroying and building programmable bot for minetest game
 
-Программирование бота
------------------------
-Команды:
-<pre><code>
-b:jump(x, y, z)
-b:cube(r)
-b:cuboid(x,y,z)
-b:circle(rx)
-b:sphere(r)
-b:spheroid(rx, ry, rz)
-b:cylinder(axis, r, h)
-</code></pre>
-Команда бота:
-<code>b:cylinder('z',10,-50)</code> где z - направление оси цилиндра, 10 - радиус, а -50 высота, 
-приведет к подобному результату
-![](http://storage2.static.itmages.ru/i/13/0313/h_1363122697_7393867_d41d8cd98f.jpg)
+See more on [project wiki](wiki)
+
+![](http://storage2.static.itmages.ru/i/13/0317/h_1363470595_6472701_d41d8cd98f.jpg)
 
 License of textures and sounds
 ---------------------------------------
