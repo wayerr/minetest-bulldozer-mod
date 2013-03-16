@@ -3,7 +3,7 @@ minetest-bulldozer-mod
 
 destroying and building programmable bot for minetest game
 
-See more on [project wiki](wiki)
+See more on [project wiki](../../wiki)
 
 ![](http://storage2.static.itmages.ru/i/13/0317/h_1363470595_6472701_d41d8cd98f.jpg)
 
