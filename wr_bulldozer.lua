@@ -160,7 +160,7 @@ function this.Bulldozer:clean_building_site()
 end
 
 function this.Bulldozer:process_node(pos) 
-  --print("process_node(pos="..minetest.pos_to_string(pos))
+  print("process_node(pos="..minetest.pos_to_string(pos))
   self.bsite.site:set(pos, {state = self.state})
 end
 
@@ -171,7 +171,7 @@ function this.Bulldozer:draw()
   for pos, node in bsite.site:cells()  do
     if node and node.state then
       local pos = wr_router.pos(ip.x + pos.x, ip.y + pos.y, ip.z + pos.z)
-      --print(minetest.pos_to_string(pos).." "..tostring(node.state))
+      print(minetest.pos_to_string(pos).." "..tostring(node.state))
       table.insert(self.queue, {
         pos = pos,
         state = node.state
