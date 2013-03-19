@@ -3,13 +3,13 @@ load_module("wr_utils")
 local this = {}
 
 --make axes map
-local axes_table = {'x','z','y'}
+this.axes_table = {'x','z','y'}
 do
-  local copy_axes = wr_utils.copy_table(axes_table);
+  local copy_axes = wr_utils.copy_table(this.axes_table);
   for k,v in ipairs(copy_axes) do
     --make x={y,z} tables
-    axes_table[v] = wr_utils.copy_table(axes_table);
-    table.remove(axes_table[v], k)
+    this.axes_table[v] = wr_utils.copy_table(this.axes_table);
+    table.remove(this.axes_table[v], k)
   end
 end
 
@@ -26,11 +26,9 @@ function this.round(p)
 end
 
 function this.add(pos, dx, dy, dz) 
-  return {
-    x=pos.x + dx, 
-    y=pos.y + dy, 
-    z=pos.z + dz
-  }
+  pos.x=pos.x + dx
+  pos.y=pos.y + dy
+  pos.z=pos.z + dz
 end
 
 this.Router = {}
@@ -54,10 +52,7 @@ function this.Router:_move(cursor_pos, axes, i, j)
 end
 
 function this.Router:jump(x, y, z)
-  local p = self.pos
-  p.x = p.x + x
-  p.y = p.y + y
-  p.z = p.z + z
+  this.add(self.bsite.cursor, x, y, z)
 end
 
 function this.Router:extend(axis, lenght)
@@ -70,58 +65,41 @@ function this.Router:extend(axis, lenght)
     for path_idx = 1, path_len do
       local exentry = wr_utils.copy_table(path[path_idx])
       exentry[axis] = exentry[axis] + i
-      table.insert(path, exentry)
+      self:process_node(exentry)
     end
   end
 end
 
 function this.Router:path(...)
-  local diff = {}
+  local first_v
   for i,v in ipairs(arg) do
-    local axis = (i-1) % 3
+    local axis = (i-1) % 2
     if axis == 0 then
-      diff.dx = v
-    elseif axis == 1 then
-      diff.dy = v
+      first_v = v
     else
-      diff.dz = v
-      self:line(diff.dx, diff.dy, diff.dz)
+      self:line(first_v, v)
     end
   end
 end
 
-function this.Router:line(dx, dy, dz)
-  local p = wr_utils.copy_table(self.pos)
+function this.Router:line(di, dj)
+  local cursor = self.bsite.cursor
+  local p = wr_utils.copy_table(cursor)
   -- used DDA algorithm
-  local adx = math.abs(dx)
-  local ady = math.abs(dy)
-  local adz = math.abs(dz)
-  local dmax = math.max(adx,math.max(ady, adz))
+  local dmax = math.max( math.abs(di), math.abs(dj))
   if dmax == 0 then
     return
   end
-  local xstep = dx/dmax
-  local ystep = dy/dmax
-  local zstep = dz/dmax
-  for d = 0, dmax do
-    p.x = p.x + xstep
-    p.y = p.y + ystep
-    p.z = p.z + zstep
+  local istep = di/dmax
+  local jstep = dj/dmax
+  for d = 0, dmax do --TODO implement path cursor
+    p.x = p.x + istep
+    p.z = p.z + jstep
     local pos = this.round(p)
     --print("line pos="..minetest.pos_to_string(pos))
     table.insert(self._path, pos)
   end
-  self.pos = p;
-end
-
-function this.Router:draw()
-  while true do
-    local p = table.remove(self._path, 1)
-    if not p then
-      break
-    end
-    self:process_node(p)
-  end
+  self.bsite.cursor = p
 end
 
 function this.Router:cube(r)
@@ -146,7 +124,7 @@ function this.Router:circle(axis, r)
   local p = wr_utils.copy_table(self.pos)
   local r2 = r*r;
   local e = math.floor(r/math.sqrt(2))
-  local axes = axes_table[axis]
+  local axes = this.axes_table[axis]
   p[axis] = self.pos[axis]
   for i = 0, e do
     local i2 = i*i
@@ -179,7 +157,7 @@ end
 
 function this.Router:rect(axis, width, height)
   local p = wr_utils.copy_table(self.pos)
-  local axes = axes_table[axis]
+  local axes = this.axes_table[axis]
   p[axis] = self.pos[axis]
   local full_len = (width + height) * 2 - 1
   local i = 0
@@ -228,7 +206,7 @@ end
 function this.Router:cylinder(axis, r, h)
   local p = wr_utils.copy_table(self.pos)
   local r2 = r*r
-  local axes = axes_table[axis]
+  local axes = this.axes_table[axis]
   local hstart = math.min(0, h)
   local hend = math.max(0, h)
   for x = -r, r do
